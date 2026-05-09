@@ -1,4 +1,4 @@
-module DiD
+module ETWFE
 
 using DataFrames
 using LinearAlgebra
