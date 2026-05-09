@@ -1,6 +1,6 @@
 name = "DiD"
 uuid = "82ad1a81-a666-4377-9490-6350590dd954"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Xiang Ao <xiangao@gmail.com>"]
 
 [deps]
