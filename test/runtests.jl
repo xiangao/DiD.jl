@@ -1,5 +1,5 @@
 using Test
-using DiD
+using ETWFE
 using DataFrames
 
 @testset "DiD.jl" begin
