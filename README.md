@@ -1,8 +1,9 @@
 # ETWFE.jl
 
-Extended Two-Way Fixed Effects (ETWFE) estimator for staggered
-difference-in-differences in Julia, following Wooldridge (2021) and
-Callaway & Sant'Anna (2021).
+This is a small Julia implementation of the extended two-way fixed effects
+(ETWFE) estimator for staggered difference-in-differences. The setup follows
+Wooldridge (2021) and is close in spirit to the `did` workflow of
+Callaway and Sant'Anna (2021).
 
 ## Installation
 
@@ -16,13 +17,13 @@ Pkg.add(url="https://github.com/xiangao/DiD.jl")
 ```julia
 using ETWFE, DataFrames
 
-# Load the built-in mpdta panel dataset
+# Load the built-in mpdta panel dataset.
 df = dataset("mpdta")
 
-# Estimate cohort × time ATT(g,t) cells
+# Estimate cohort-by-time ATT(g,t) cells.
 res = att_gt(df, :lemp, :year, :countyreal, :first_treat)
 
-# Aggregate to event-study, calendar, or overall ATT
+# Aggregate the cells.
 es  = emfx(res, type="event")     # event-study relative to treatment
 cal = emfx(res, type="calendar")  # by calendar year
 ov  = emfx(res, type="overall")   # single overall ATT
