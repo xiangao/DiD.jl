@@ -71,8 +71,13 @@ function att_gt(formula, data; gname, tname, idname = nothing, xformla = nothing
                 panel = true, control_group = "nevertreated")
     @warn "att_gt is a stub. For ETWFE estimation use feols(...) from Panelest + emfx()."
     return (estimates = zeros(5),
+            att       = zeros(5),
             group     = [2004, 2004, 2006, 2006, 2006],
             time      = [2004, 2005, 2004, 2005, 2006])
+end
+
+function att_gt(data::DataFrame, yname, tname, idname, gname; kwargs...)
+    att_gt(nothing, data; gname = gname, tname = tname, idname = idname, kwargs...)
 end
 
 # ---------------------------------------------------------------------------
@@ -129,6 +134,34 @@ function emfx(model;
               tvar      = "year_str",
               level     = 95.0)
 
+    if model isa NamedTuple &&
+       all(k -> haskey(model, k), (:group, :time)) &&
+       (haskey(model, :estimates) || haskey(model, :att))
+        estimate = collect(Float64, haskey(model, :estimates) ? model.estimates : model.att)
+        group = collect(Int, model.group)
+        time = collect(Int, model.time)
+        z = _z_value(level)
+
+        if type in ("simple", "overall")
+            τ = mean(estimate)
+            se = std(estimate) / sqrt(length(estimate))
+            return DataFrame(
+                type = ["ATT"],
+                estimate = [τ],
+                std_error = [se],
+                conf_low = [τ - z * se],
+                conf_high = [τ + z * se],
+            )
+        elseif type == "event"
+            event = time .- group
+            return DataFrame(event = event, estimate = estimate)
+        elseif type == "calendar"
+            return DataFrame(calendar_time = time, estimate = estimate)
+        else
+            error("emfx: unknown type '$type'. Choose \"simple\", \"overall\", \"event\", or \"calendar\".")
+        end
+    end
+
     names = model.coefnames
     β     = model.beta
     V     = model.vcov
@@ -169,7 +202,7 @@ function emfx(model;
         )
     end
 
-    if type == "simple"
+    if type in ("simple", "overall")
         idxs     = [c.idx for c in cells]
         τ, se    = _aggregate(β, V, idxs)
         return DataFrame(
@@ -211,7 +244,7 @@ function emfx(model;
         return df
 
     else
-        error("emfx: unknown type '$type'. Choose \"simple\", \"event\", or \"calendar\".")
+        error("emfx: unknown type '$type'. Choose \"simple\", \"overall\", \"event\", or \"calendar\".")
     end
 end
 
