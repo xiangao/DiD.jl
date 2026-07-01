@@ -1,39 +1,34 @@
-# ETWFE.jl
+# ETWFE.jl — DEPRECATED
 
-This is a small Julia implementation of the extended two-way fixed effects
-(ETWFE) estimator for staggered difference-in-differences. The setup follows
-Wooldridge (2021) and is close in spirit to the `did` workflow of
-Callaway and Sant'Anna (2021).
-
-## Installation
+**This package is deprecated. Use [`Panelest.jl`](https://github.com/xiangao/Panelest.jl)'s
+`etwfe()` + `emfx()` instead — it implements the same Wooldridge (2021)
+extended two-way fixed effects (ETWFE) estimator, with a correct
+identification check and test coverage that this package never had.**
 
 ```julia
-using Pkg
-Pkg.add(url="https://github.com/xiangao/DiD.jl")
+using Panelest, DataFrames
+
+df = Panelest.dataset("mpdta")
+m  = Panelest.etwfe(df, @formula(lemp ~ lpop); gvar = :first_treat, tvar = :year)
+
+Panelest.emfx(m, type = "simple")   # overall ATT
+Panelest.emfx(m, type = "event")    # event-study
+Panelest.emfx(m, type = "calendar") # by calendar year
 ```
 
-## Usage
+## Why this package is deprecated
 
-```julia
-using ETWFE, DataFrames
+`att_gt` in this package was always a stub — it never estimated anything and
+returned hardcoded placeholder numbers (see `src/ETWFE.jl`). The only real
+functionality here, `emfx()` parsing raw `Panelest.feols` coefficient names,
+had no test coverage exercising that code path and is superseded by
+`Panelest.jl`'s own `etwfe()` + `emfx(::ETWFEResult)`, which wraps the
+regression construction, validates that every cohort has a pre-treatment
+period (dropping and warning about cohorts that don't, since their effect
+isn't identified), and is covered by regression tests.
 
-# Load the built-in mpdta panel dataset.
-df = dataset("mpdta")
-
-# Estimate cohort-by-time ATT(g,t) cells.
-res = att_gt(df, :lemp, :year, :countyreal, :first_treat)
-
-# Aggregate the cells.
-es  = emfx(res, type="event")     # event-study relative to treatment
-cal = emfx(res, type="calendar")  # by calendar year
-ov  = emfx(res, type="overall")   # single overall ATT
-```
-
-## Functions
-
-- `att_gt(data, y, t, id, g; ...)` — estimate ATT(g,t) for each cohort × time cell
-- `emfx(model; type, level)` — aggregate ATT(g,t) cells to event-study, calendar, or overall
-- `dataset(name)` — load built-in datasets (`"mpdta"`)
+`att_gt` now raises an error directing you to `Panelest.jl` instead of
+silently returning fake numbers.
 
 ## References
 

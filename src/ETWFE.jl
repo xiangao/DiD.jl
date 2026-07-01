@@ -64,20 +64,16 @@ function dataset(name::String)
 end
 
 # ---------------------------------------------------------------------------
-# att_gt stub (Callaway & Sant'Anna API — not implemented)
+# att_gt — REMOVED. This package (ETWFE.jl / DiD.jl) is deprecated; att_gt
+# never estimated anything (it returned hardcoded placeholder numbers). Use
+# Panelest.jl's `etwfe()` + `emfx()` instead, which is a real, tested
+# implementation. See README.md.
 # ---------------------------------------------------------------------------
 
-function att_gt(formula, data; gname, tname, idname = nothing, xformla = nothing,
-                panel = true, control_group = "nevertreated")
-    @warn "att_gt is a stub. For ETWFE estimation use feols(...) from Panelest + emfx()."
-    return (estimates = zeros(5),
-            att       = zeros(5),
-            group     = [2004, 2004, 2006, 2006, 2006],
-            time      = [2004, 2005, 2004, 2005, 2006])
-end
-
-function att_gt(data::DataFrame, yname, tname, idname, gname; kwargs...)
-    att_gt(nothing, data; gname = gname, tname = tname, idname = idname, kwargs...)
+function att_gt(args...; kwargs...)
+    error("att_gt is not implemented and never was — this package is " *
+          "deprecated. Use `Panelest.etwfe(data, formula; gvar, tvar)` and " *
+          "`Panelest.emfx(model; type)` instead. See this package's README.")
 end
 
 # ---------------------------------------------------------------------------
